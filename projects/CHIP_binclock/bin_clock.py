@@ -83,11 +83,5 @@ while 1:
 			colorArray[offset+i+6*(2+2*(with_date+with_temp))] = sec_color	# 16-21, 28-33
 
 	# send it to the salsa driver
-	for i in colorArray:
-		print(i.red, end="/")
-		print(i.green, end="/")
-		print(i.blue, end="/")
-	print("send")
 	salsa.ws2812set(pin,colorArray)
-	print("done")
 	sleep(1)
