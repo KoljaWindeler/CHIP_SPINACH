@@ -16,6 +16,7 @@ LC = 38	# spinach dip has 38 leds
 with_date = 0
 with_temp = 0
 offset = 0
+dimm_value = 15
 if(with_temp and with_date):
 	exit("only date OR temperature")
 
@@ -23,10 +24,7 @@ if(with_temp and with_date):
 salsa = arduino_bridge.connection()
 salsa.setup_ws2812_unique_color_output(pin,LC)
 
-colorArray = []
-no_color = arduino_bridge.Color(0, 0, 0)
-for i in range(0,LC):
-	colorArray.append(no_color)
+colorArray = [arduino_bridge.Color(0,0,0) for i in range(LC)]
 
 while 1:
 	# generate color, shall be dynamic later therefor in loop
@@ -61,26 +59,38 @@ while 1:
 	print(sec_bin)
 	print()
 
-	# reset color array
-	for i in range(offset,offset+(3+2*(with_date+with_temp))*6): # 4-21, 4-33
-		colorArray[i] = no_color
-
 	# copy bin time to color array
 	for i in range(0,6):
-		if(month_bin[i] and with_date):
+		if(with_date):
 			colorArray[offset+i+6*0] = month_color				# 04-09, with offset = 4
-		if(day_bin[i] and with_date):
-			colorArray[offset+i+6*1] = day_color				# 10-15
-		if(t_max_bin[i] and with_temp):
-			colorArray[offset+i+6*0] = temp_max_color			# 04-09
-		if(t_min_bin[i] and with_temp):
-			colorArray[offset+i+6*1] = temp_min_color			# 10-15
-		if(hour_bin[i]):
-			colorArray[offset+i+6*(0+2*(with_date+with_temp))] = day_color	# 04-09, 16-21
-		if(min_bin[i]):
-			colorArray[offset+i+6*(1+2*(with_date+with_temp))] = min_color	# 10-15, 22-27
-		if(sec_bin[i]):
-			colorArray[offset+i+6*(2+2*(with_date+with_temp))] = sec_color	# 16-21, 28-33
+			colorArray[offset+i+6*1] = day_color				# 04-09, with offset = 4
+			if(not(month_bin[i])):
+				colorArray[offset+i+6*0].dimm(5)			# 04-09, with offset = 4
+			if(day_bin[i]):
+				colorArray[offset+i+6*1].dimm(5)			# 10-15
+
+		if(with_temp):
+			colorArray[offset+i+6*0] = temp_max_color			# 04-09, with offset = 4
+			colorArray[offset+i+6*1] = temp_min_color			# 04-09, with offset = 4
+			if(t_max_bin[i]):
+				colorArray[offset+i+6*0].dimm(dimm_value)		# 04-09
+			if(t_min_bin[i]):
+				colorArray[offset+i+6*1].dimm(dimm_value)		# 10-15
+
+
+		colorArray[offset+i+6*(0+2*(with_date+with_temp))].copy(day_color)	# 04-09, 16-21
+		colorArray[offset+i+6*(1+2*(with_date+with_temp))].copy(min_color)	# 10-15, 22-27
+		colorArray[offset+i+6*(2+2*(with_date+with_temp))].copy(sec_color)	# 16-21, 28-33
+
+		if(not(hour_bin[i])):
+			colorArray[offset+i+6*(0+2*(with_date+with_temp))].dimm(dimm_value)
+
+		if(not(min_bin[i])):
+			colorArray[offset+i+6*(1+2*(with_date+with_temp))].dimm(dimm_value)
+
+		if(not(sec_bin[i])):
+			colorArray[offset+i+6*(2+2*(with_date+with_temp))].dimm(dimm_value)
+	
 
 	# send it to the salsa driver
 	salsa.ws2812set(pin,colorArray)
