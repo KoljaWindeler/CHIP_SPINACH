@@ -13,12 +13,10 @@ sec_bin=bytearray(6)
 # prepare vars
 pin = 6
 LC = 38	# spinach dip has 38 leds
-with_date = 1
+with_date = 0
 with_temp = 0
-offset = 4
-dimm_value = 60 # divide by 15
-on_value = 60
-
+offset = 0
+dimm_value = 15
 if(with_temp and with_date):
 	exit("only date OR temperature")
 
@@ -30,13 +28,13 @@ colorArray = [arduino_bridge.Color(0,0,0) for i in range(LC)]
 
 while 1:
 	# generate color, shall be dynamic later therefor in loop
-	temp_max_color = arduino_bridge.Color(on_value, 0, 0) # red
-	temp_min_color = arduino_bridge.Color(0, 0, on_value) # blue
-	month_color = arduino_bridge.Color(on_value, 0, 0)	 # red
-	day_color = arduino_bridge.Color(on_value, on_value//2, 0)	 # orange
-	hour_color = arduino_bridge.Color(0, 0, on_value)	 # blue
-	min_color = arduino_bridge.Color(on_value, 0, on_value)	 # pink
-	sec_color = arduino_bridge.Color(0, on_value, 0)	 # green	
+	temp_max_color = arduino_bridge.Color(0, 0, 0) # red
+	temp_min_color = arduino_bridge.Color(0, 0, 0) # blue
+	month_color = arduino_bridge.Color(0, 0, 0)	 # red
+	day_color = arduino_bridge.Color(0, 0, 0)	 # cyan
+	hour_color = arduino_bridge.Color(0, 0, 0)	 # blue
+	min_color = arduino_bridge.Color(0, 0, 0)	 # yellow
+	sec_color = arduino_bridge.Color(0, 0, 0)	 # green	
 
 	# generate bin array for time, date and temp
 	for i in range(0,6):
@@ -64,12 +62,12 @@ while 1:
 	# copy bin time to color array
 	for i in range(0,6):
 		if(with_date):
-			colorArray[offset+i+6*0].copy(month_color)			# 04-09, with offset = 4
-			colorArray[offset+i+6*1].copy(day_color)			# 04-09, with offset = 4
+			colorArray[offset+i+6*0] = month_color				# 04-09, with offset = 4
+			colorArray[offset+i+6*1] = day_color				# 04-09, with offset = 4
 			if(not(month_bin[i])):
-				colorArray[offset+i+6*0].dimm(dimm_value)		# 04-09, with offset = 4
-			if(not(day_bin[i])):
-				colorArray[offset+i+6*1].dimm(dimm_value)		# 10-15
+				colorArray[offset+i+6*0].dimm(5)			# 04-09, with offset = 4
+			if(day_bin[i]):
+				colorArray[offset+i+6*1].dimm(5)			# 10-15
 
 		if(with_temp):
 			colorArray[offset+i+6*0] = temp_max_color			# 04-09, with offset = 4
@@ -80,7 +78,7 @@ while 1:
 				colorArray[offset+i+6*1].dimm(dimm_value)		# 10-15
 
 
-		colorArray[offset+i+6*(0+2*(with_date+with_temp))].copy(hour_color)	# 04-09, 16-21
+		colorArray[offset+i+6*(0+2*(with_date+with_temp))].copy(day_color)	# 04-09, 16-21
 		colorArray[offset+i+6*(1+2*(with_date+with_temp))].copy(min_color)	# 10-15, 22-27
 		colorArray[offset+i+6*(2+2*(with_date+with_temp))].copy(sec_color)	# 16-21, 28-33
 
